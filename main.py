@@ -14,7 +14,7 @@ from kivymd.label import MDLabel
 from kivymd.button import MDFloatingActionButton
 from kivy.uix.floatlayout import FloatLayout
 from kivymd.font_definitions import theme_font_styles
-from kivymd.navigationdrawer import MDNavigationDrawer, NavigationLayout
+from kivymd.navigationdrawer import MDNavigationDrawer, NavigationLayout, NavigationDrawerToolbar, NavigationDrawerIconButton, NavigationDrawerSubheader
 from kivymd.cards import MDSeparator
 
 kivy.require("2.0.0")
@@ -81,7 +81,6 @@ class ConnectPage(GridLayout):
         info = f"Attempting to join {ip}:{port} as {username}"
         chat_app.info_page.update_info(info)
         chat_app.screen_manager.current = "Info"
-        #chat_app.theme_cls.theme_style = "Light"
 
         with open("prev_details.txt", "w") as f:
             f.write(f"{ip},{port},{username}")
@@ -117,18 +116,25 @@ class SuperChatApp(App):
         Config.set('kivy', 'window_title', 'Hello')
 
         self.nav_layout = NavigationLayout()
-        self.nav_drawer = MDNavigationDrawer()
-        self.toolbar = MDToolbar(
-            elevation=10, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
+        self.nav_drawer = MDNavigationDrawer(
+            drawer_logo=r"C:\Users\Asus\Desktop\Kivy-Chat-App\icon.png", spacing=8)
+
+        self.toolbar = NavigationDrawerToolbar(
+            elevation=8, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
         self.toolbar.left_action_items = [
             ["close", lambda x: chat_app.root.toggle_nav_drawer()]]
         self.nav_drawer.add_widget(self.toolbar)
+        self.sub_nav = NavigationDrawerSubheader(text="Settings")
+        self.nav_drawer.add_widget(self.sub_nav)
+        self.settings_btn = NavigationDrawerIconButton(
+            text="Dark Mode", on_press=self.theme_change)
+        self.nav_drawer.add_widget(self.settings_btn)
         self.nav_layout.add_widget(self.nav_drawer)
 
         self.box_layout = BoxLayout(orientation="vertical")
 
         self.toolbar = MDToolbar(
-            elevation=10, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
+            elevation=9, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
         self.toolbar.left_action_items = [
             ["menu", lambda x: chat_app.root.toggle_nav_drawer()]]
         self.box_layout.add_widget(self.toolbar)
@@ -150,6 +156,12 @@ class SuperChatApp(App):
         self.nav_layout.add_widget(self.box_layout)
 
         return self.nav_layout
+
+    def theme_change(self, instance):
+        if chat_app.theme_cls.theme_style == "Dark":
+            chat_app.theme_cls.theme_style = "Light"
+        else:
+            chat_app.theme_cls.theme_style = "Dark"
 
 
 if __name__ == "__main__":
