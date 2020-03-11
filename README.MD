@@ -2,14 +2,14 @@
 
 ## Demo
 
-![Login Page Light](demo/login_page)
+![Login Page Light](demo/login_page.png)
 
-![Login Page Light](demo/login_page_dark)
+![Login Page Light](demo/login_page_dark.png)
 
-![Info Page Light](demo/info_page)
+![Info Page Light](demo/info_page.png)
 
-![Info Page Dark](demo/info_page_dark)
+![Info Page Dark](demo/info_page_dark.png)
 
-![Navigation Drawer Light](demo/nav_drawer)
+![Navigation Drawer Light](demo/nav_drawer.png)
 
-![Navigation Drawer Dark](demo/nav_drawer_dark)
+![Navigation Drawer Dark](demo/nav_drawer_dark.png)
