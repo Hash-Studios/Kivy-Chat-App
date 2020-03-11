@@ -3,11 +3,9 @@ import os
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.config import Config
-from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
-from kivy.uix.button import Button
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.textfields import MDTextField
 from kivymd.theming import ThemeManager
@@ -18,6 +16,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivymd.font_definitions import theme_font_styles
 
 kivy.require("2.0.0")
+
 
 class ConnectPage(GridLayout):
     def __init__(self, **kwargs):
@@ -36,36 +35,42 @@ class ConnectPage(GridLayout):
             prev_port = ""
             prev_username = ""
 
-        self.add_widget(MDLabel(text="IP : ",halign="center",theme_text_color="Primary"))
+        self.add_widget(MDLabel(text="IP : ", halign="center",
+                                theme_text_color="Primary"))
         self.float = FloatLayout()
-        self.ip = MDTextField(text=prev_ip, multiline=False,pos_hint={'x': 0, 'y': 0.2})
+        self.ip = MDTextField(text=prev_ip, multiline=False,
+                              pos_hint={'x': 0, 'y': 0.2})
         self.float.add_widget(self.ip)
         self.add_widget(self.float)
 
-        self.add_widget(MDLabel(text="Port : ",halign="center",theme_text_color="Primary"))
+        self.add_widget(MDLabel(text="Port : ", halign="center",
+                                theme_text_color="Primary"))
         self.float = FloatLayout()
-        self.port = MDTextField(text=prev_port, multiline=False,pos_hint={'x': 0, 'y': 0.2})
+        self.port = MDTextField(
+            text=prev_port, multiline=False, pos_hint={'x': 0, 'y': 0.2})
         self.float.add_widget(self.port)
         self.add_widget(self.float)
 
-        self.add_widget(MDLabel(text="Username : ",halign="center",theme_text_color="Primary"))
+        self.add_widget(MDLabel(text="Username : ",
+                                halign="center", theme_text_color="Primary"))
         self.float = FloatLayout()
-        self.username = MDTextField(text=prev_username, multiline=False,pos_hint={'x': 0, 'y': 0.2})
+        self.username = MDTextField(
+            text=prev_username, multiline=False, pos_hint={'x': 0, 'y': 0.2})
         self.float.add_widget(self.username)
         self.add_widget(self.float)
 
         self.float_layout = FloatLayout()
-        self.connect = MDFloatingActionButton(icon="check",pos_hint={'x': 0.68, 'y': 0})
+        self.connect = MDFloatingActionButton(
+            icon="check", pos_hint={'x': 0.68, 'y': 0})
         self.connect.bind(on_release=self.connect_button)
         self.float_layout.add_widget(self.connect)
-        self.add_widget(Label())
-        self.add_widget(Label())
-        self.add_widget(Label())
-        self.add_widget(Label())
-        self.add_widget(Label())
+        self.add_widget(MDLabel())
+        self.add_widget(MDLabel())
+        self.add_widget(MDLabel())
+        self.add_widget(MDLabel())
+        self.add_widget(MDLabel())
         self.add_widget(self.float_layout)
-        
-    
+
     def connect_button(self, instance):
         ip = self.ip.text
         port = self.port.text
@@ -78,12 +83,14 @@ class ConnectPage(GridLayout):
         with open("prev_details.txt", "w") as f:
             f.write(f"{ip},{port},{username}")
 
+
 class InfoPage(GridLayout):
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.cols = 1
 
-        self.message = MDLabel(halign="center", valign="middle", font_style=theme_font_styles[7], theme_text_color="Primary")
+        self.message = MDLabel(halign="center", valign="middle",
+                               font_style=theme_font_styles[7], theme_text_color="Primary")
         self.message.bind(width=self.update_text_width)
         self.add_widget(self.message)
 
@@ -93,6 +100,7 @@ class InfoPage(GridLayout):
     def update_text_width(self, *_):
         self.message.text_size = (self.message.width*0.9, None)
 
+
 class SuperChatApp(App):
     def build(self):
         app = App.get_running_app()
@@ -100,14 +108,15 @@ class SuperChatApp(App):
         app.theme_cls.primary_palette = "DeepPurple"
         app.theme_cls.accent_palette = "DeepPurple"
         app.theme_cls.theme_style = "Dark"
-        Window.size = (360,640)
+        Window.size = (360, 640)
         Window.borderless = False
         self.title = "Super Chat"
-        Config.set('kivy','window_title','Hello')
+        Config.set('kivy', 'window_title', 'Hello')
 
         self.box_layout = BoxLayout(orientation="vertical")
 
-        self.toolbar = MDToolbar(elevation=10, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
+        self.toolbar = MDToolbar(
+            elevation=10, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
         self.box_layout.add_widget(self.toolbar)
 
         self.screen_manager = ScreenManager()
@@ -125,6 +134,7 @@ class SuperChatApp(App):
         self.box_layout.add_widget(self.screen_manager)
 
         return self.box_layout
+
 
 if __name__ == "__main__":
     chat_app = SuperChatApp()
