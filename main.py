@@ -14,6 +14,8 @@ from kivymd.label import MDLabel
 from kivymd.button import MDFloatingActionButton
 from kivy.uix.floatlayout import FloatLayout
 from kivymd.font_definitions import theme_font_styles
+from kivymd.navigationdrawer import MDNavigationDrawer, NavigationLayout
+from kivymd.cards import MDSeparator
 
 kivy.require("2.0.0")
 
@@ -61,7 +63,7 @@ class ConnectPage(GridLayout):
 
         self.float_layout = FloatLayout()
         self.connect = MDFloatingActionButton(
-            icon="check", pos_hint={'x': 0.68, 'y': 0})
+            icon="arrow-right", pos_hint={'x': 0.68, 'y': 0})
         self.connect.bind(on_release=self.connect_button)
         self.float_layout.add_widget(self.connect)
         self.add_widget(MDLabel())
@@ -79,6 +81,7 @@ class ConnectPage(GridLayout):
         info = f"Attempting to join {ip}:{port} as {username}"
         chat_app.info_page.update_info(info)
         chat_app.screen_manager.current = "Info"
+        #chat_app.theme_cls.theme_style = "Light"
 
         with open("prev_details.txt", "w") as f:
             f.write(f"{ip},{port},{username}")
@@ -107,16 +110,27 @@ class SuperChatApp(App):
         app.theme_cls = ThemeManager()
         app.theme_cls.primary_palette = "DeepPurple"
         app.theme_cls.accent_palette = "DeepPurple"
-        app.theme_cls.theme_style = "Dark"
+        app.theme_cls.theme_style = "Light"
         Window.size = (360, 640)
         Window.borderless = False
         self.title = "Super Chat"
         Config.set('kivy', 'window_title', 'Hello')
 
+        self.nav_layout = NavigationLayout()
+        self.nav_drawer = MDNavigationDrawer()
+        self.toolbar = MDToolbar(
+            elevation=10, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
+        self.toolbar.left_action_items = [
+            ["close", lambda x: chat_app.root.toggle_nav_drawer()]]
+        self.nav_drawer.add_widget(self.toolbar)
+        self.nav_layout.add_widget(self.nav_drawer)
+
         self.box_layout = BoxLayout(orientation="vertical")
 
         self.toolbar = MDToolbar(
             elevation=10, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
+        self.toolbar.left_action_items = [
+            ["menu", lambda x: chat_app.root.toggle_nav_drawer()]]
         self.box_layout.add_widget(self.toolbar)
 
         self.screen_manager = ScreenManager()
@@ -133,7 +147,9 @@ class SuperChatApp(App):
 
         self.box_layout.add_widget(self.screen_manager)
 
-        return self.box_layout
+        self.nav_layout.add_widget(self.box_layout)
+
+        return self.nav_layout
 
 
 if __name__ == "__main__":
