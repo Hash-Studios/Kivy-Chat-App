@@ -7,7 +7,7 @@ from kivy.core.window import Window
 from kivy.config import Config
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.textinput import TextInput
+from kivy.uix.scrollview import ScrollView
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.clock import Clock
 from kivymd.textfields import MDTextField
@@ -22,6 +22,27 @@ from kivymd.cards import MDSeparator
 
 kivy.require("2.0.0")
 
+
+class ScrollableLabel(ScrollView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.layout = GridLayout(cols=1, size_hint_y=None)
+        self.add_widget(self.layout)
+
+        self.chat_history = MDLabel(size_hint_y=None, markup=True)
+        self.scroll_to_point = MDLabel()
+
+        self.layout.add_widget(self.chat_history)
+        self.layout.add_widget(self.scroll_to_point)
+
+    def update_chat_history(self, message):
+        self.chat_history.text += '\n' + message
+        
+        self.layout.height = self.chat_history.texture_size[1] + 15
+        self.chat_history.height = self.chat_history.texture_size[1]
+        self.chat_history.text_size = (self.chat_history.width*0.98, None)
+
+        self.scroll_to(self.scroll_to_point)
 
 class ConnectPage(GridLayout):
     def __init__(self, **kwargs):
@@ -122,9 +143,25 @@ class ChatPage(GridLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.cols = 1
-        self.add_widget(MDLabel(text="Hey! It's working", halign="center", valign="middle",
-                                font_style=theme_font_styles[7], theme_text_color="Primary"))
+        self.rows = 2
+        self.padding = 5
+        # self.add_widget(MDLabel(text="Hey! It's working", halign="center", valign="middle",
+        #                         font_style=theme_font_styles[7], theme_text_color="Primary"))
+        self.history = MDLabel(height = Window.size[1]*0.788, size_hint_y=None)
+        self.add_widget(self.history)
 
+        self.new_msg = MDTextField(width=Window.size[0]*0.8, size_hint_x=None, multiline=False)
+        self.send_fab = MDFloatingActionButton(
+            icon="arrow-right", pos_hint={'x': 0.68, 'y': 0})
+        self.send_fab.bind(on_release=self.send_message)
+        bottom_line = GridLayout(cols=2)
+        bottom_line.add_widget(self.new_msg)
+        bottom_line.add_widget(self.send_fab)
+        self.add_widget(bottom_line)
+
+    def send_message(self, _):
+        print(f"Sent {self.new_msg.text}")
+        self.new_msg.text = ''
 
 class SuperChatApp(App):
     def build(self):
