@@ -1,5 +1,7 @@
 import kivy
 import os
+import sys
+import client
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.config import Config
@@ -7,6 +9,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.clock import Clock
 from kivymd.textfields import MDTextField
 from kivymd.theming import ThemeManager
 from kivymd.toolbar import MDToolbar
@@ -62,10 +65,10 @@ class ConnectPage(GridLayout):
         self.add_widget(self.float)
 
         self.float_layout = FloatLayout()
-        self.connect = MDFloatingActionButton(
+        self.connect_fab = MDFloatingActionButton(
             icon="arrow-right", pos_hint={'x': 0.68, 'y': 0})
-        self.connect.bind(on_release=self.connect_button)
-        self.float_layout.add_widget(self.connect)
+        self.connect_fab.bind(on_release=self.connect_button)
+        self.float_layout.add_widget(self.connect_fab)
         self.add_widget(MDLabel())
         self.add_widget(MDLabel())
         self.add_widget(MDLabel())
@@ -78,12 +81,24 @@ class ConnectPage(GridLayout):
         port = self.port.text
         username = self.username.text
 
+        with open("prev_details.txt", "w") as f:
+            f.write(f"{ip},{port},{username}")
+
         info = f"Attempting to join {ip}:{port} as {username}"
         chat_app.info_page.update_info(info)
         chat_app.screen_manager.current = "Info"
+        Clock.schedule_once(self.connect, 1)
 
-        with open("prev_details.txt", "w") as f:
-            f.write(f"{ip},{port},{username}")
+    def connect(self, _):
+        ip = self.ip.text
+        port = self.port.text
+        port = int(port)
+        username = self.username.text
+
+        if not client.connect(ip, port, username, show_error):
+            return
+        chat_app.create_chat_page()
+        chat_app.screen_manager.current = "Chat"
 
 
 class InfoPage(GridLayout):
@@ -101,6 +116,14 @@ class InfoPage(GridLayout):
 
     def update_text_width(self, *_):
         self.message.text_size = (self.message.width*0.9, None)
+
+
+class ChatPage(GridLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.cols = 1
+        self.add_widget(MDLabel(text="Hey! It's working", halign="center", valign="middle",
+                                font_style=theme_font_styles[7], theme_text_color="Primary"))
 
 
 class SuperChatApp(App):
@@ -162,6 +185,18 @@ class SuperChatApp(App):
             chat_app.theme_cls.theme_style = "Light"
         else:
             chat_app.theme_cls.theme_style = "Dark"
+
+    def create_chat_page(self):
+        self.chat_page = ChatPage()
+        screen = Screen(name="Chat")
+        screen.add_widget(self.chat_page)
+        self.screen_manager.add_widget(screen)
+
+
+def show_error(message):
+    chat_app.info_page.update_info(message)
+    chat_app.screen_manager.current = "Info"
+    Clock.schedule_once(sys.exit, 10)
 
 
 if __name__ == "__main__":
