@@ -29,7 +29,8 @@ class ScrollableLabel(ScrollView):
         self.layout = GridLayout(cols=1, size_hint_y=None)
         self.add_widget(self.layout)
 
-        self.chat_history = MDLabel(size_hint_y=None, markup=True)
+        self.chat_history = MDLabel(
+            size_hint_y=None, markup=True, font_style=theme_font_styles[6], theme_text_color="Primary")
         self.scroll_to_point = MDLabel()
 
         self.layout.add_widget(self.chat_history)
@@ -37,12 +38,18 @@ class ScrollableLabel(ScrollView):
 
     def update_chat_history(self, message):
         self.chat_history.text += '\n' + message
-        
+
         self.layout.height = self.chat_history.texture_size[1] + 15
         self.chat_history.height = self.chat_history.texture_size[1]
         self.chat_history.text_size = (self.chat_history.width*0.98, None)
 
         self.scroll_to(self.scroll_to_point)
+
+    def update_chat_history_layout(self, _=None):
+        self.layout.height = self.chat_history.texture_size[1] + 15
+        self.chat_history.height = self.chat_history.texture_size[1]
+        self.chat_history.text_size = (self.chat_history.width * 0.98, None)
+
 
 class ConnectPage(GridLayout):
     def __init__(self, **kwargs):
@@ -108,7 +115,7 @@ class ConnectPage(GridLayout):
         info = f"Attempting to join {ip}:{port} as {username}"
         chat_app.info_page.update_info(info)
         chat_app.screen_manager.current = "Info"
-        Clock.schedule_once(self.connect, 1)
+        Clock.schedule_once(self.connect, 0.5)
 
     def connect(self, _):
         ip = self.ip.text
@@ -145,12 +152,13 @@ class ChatPage(GridLayout):
         self.cols = 1
         self.rows = 2
         self.padding = 5
-        # self.add_widget(MDLabel(text="Hey! It's working", halign="center", valign="middle",
-        #                         font_style=theme_font_styles[7], theme_text_color="Primary"))
-        self.history = MDLabel(height = Window.size[1]*0.788, size_hint_y=None)
+
+        self.history = ScrollableLabel(
+            height=Window.size[1]*0.788, size_hint_y=None)
         self.add_widget(self.history)
 
-        self.new_msg = MDTextField(width=Window.size[0]*0.8, size_hint_x=None, multiline=False)
+        self.new_msg = MDTextField(
+            width=Window.size[0]*0.8, size_hint_x=None, multiline=False)
         self.send_fab = MDFloatingActionButton(
             icon="arrow-right", pos_hint={'x': 0.68, 'y': 0})
         self.send_fab.bind(on_release=self.send_message)
@@ -159,9 +167,45 @@ class ChatPage(GridLayout):
         bottom_line.add_widget(self.send_fab)
         self.add_widget(bottom_line)
 
+        Window.bind(on_key_down=self.on_key_down)
+
+        Clock.schedule_once(self.focus_text_input, 1)
+        client.start_listening(self.incoming_message, show_error)
+        self.bind(size=self.adjust_fields)
+
+    def adjust_fields(self, *_):
+        if Window.size[1] * 0.1 < 70:
+            new_height = Window.size[1] - 135
+        else:
+            new_height = Window.size[1] * 0.81
+        self.history.height = new_height
+        if Window.size[0] * 0.2 < 160:
+            new_width = Window.size[0] - 70
+        else:
+            new_width = Window.size[0] * 0.91
+        self.new_msg.width = new_width
+        Clock.schedule_once(self.history.update_chat_history_layout, 0.01)
+
+    def on_key_down(self, instance, keyboard, keycode, text, modifiers):
+        if keycode == 40:
+            self.send_message(None)
+
     def send_message(self, _):
-        print(f"Sent {self.new_msg.text}")
+        msg = self.new_msg.text
         self.new_msg.text = ''
+        if msg:
+            self.history.update_chat_history(
+                f"[color=dd2020]{chat_app.connect_page.username.text}[/color] [color=20dddd]>:[/color] {msg}")
+            client.send(msg)
+        Clock.schedule_once(self.focus_text_input, 0.01)
+
+    def focus_text_input(self, _):
+        self.new_msg.focus = True
+
+    def incoming_message(self, username, message):
+        self.history.update_chat_history(
+            f"[color=20dd20]{username}[/color] [color=20dddd]>:[/color] {message}")
+
 
 class SuperChatApp(App):
     def build(self):
