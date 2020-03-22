@@ -10,15 +10,16 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.clock import Clock
-from kivymd.textfields import MDTextField
+from kivymd.app import MDApp
+from kivymd.uix.textfield import MDTextField
 from kivymd.theming import ThemeManager
-from kivymd.toolbar import MDToolbar
-from kivymd.label import MDLabel
-from kivymd.button import MDFloatingActionButton
+from kivymd.uix.toolbar import MDToolbar
+from kivymd.uix.label import MDLabel
+from kivymd.uix.button import MDFloatingActionButton, MDIconButton
 from kivy.uix.floatlayout import FloatLayout
 from kivymd.font_definitions import theme_font_styles
-from kivymd.navigationdrawer import MDNavigationDrawer, NavigationLayout, NavigationDrawerToolbar, NavigationDrawerIconButton, NavigationDrawerSubheader
-from kivymd.cards import MDSeparator
+from kivymd.uix.navigationdrawer import MDNavigationDrawer, NavigationLayout
+from kivymd.uix.card import MDSeparator
 
 kivy.require("2.0.0")
 
@@ -207,7 +208,7 @@ class ChatPage(GridLayout):
             f"[color=20dd20]{username}[/color] [color=20dddd]>:[/color] {message}")
 
 
-class SuperChatApp(App):
+class SuperChatApp(MDApp):
     def build(self):
         app = App.get_running_app()
         app.theme_cls = ThemeManager()
@@ -220,20 +221,19 @@ class SuperChatApp(App):
         Config.set('kivy', 'window_title', 'Hello')
 
         self.nav_layout = NavigationLayout()
-        self.nav_drawer = MDNavigationDrawer(
-            drawer_logo=r"C:\Users\Asus\Desktop\Kivy-Chat-App\icon.png", spacing=8)
+        self.nav_drawer = MDNavigationDrawer()
 
-        self.toolbar = NavigationDrawerToolbar(
+        self.toolbar = MDToolbar(
             elevation=8, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
         self.toolbar.left_action_items = [
             ["close", lambda x: chat_app.root.toggle_nav_drawer()]]
         self.nav_drawer.add_widget(self.toolbar)
-        self.sub_nav = NavigationDrawerSubheader(text="Settings")
-        self.nav_drawer.add_widget(self.sub_nav)
-        self.settings_btn = NavigationDrawerIconButton(
-            text="Dark Mode", on_press=self.theme_change)
+        #self.sub_nav = NavigationDrawerSubheader(text="Settings")
+        #self.nav_drawer.add_widget(self.sub_nav)
+        self.settings_btn = MDIconButton()
         self.nav_drawer.add_widget(self.settings_btn)
         self.nav_layout.add_widget(self.nav_drawer)
+        self.main_screen = ScreenManager()
 
         self.box_layout = BoxLayout(orientation="vertical")
 
@@ -248,6 +248,7 @@ class SuperChatApp(App):
         self.connect_page = ConnectPage()
         screen = Screen(name="Connect")
         screen.add_widget(self.connect_page)
+
         self.screen_manager.add_widget(screen)
 
         self.info_page = InfoPage()
@@ -256,8 +257,12 @@ class SuperChatApp(App):
         self.screen_manager.add_widget(screen)
 
         self.box_layout.add_widget(self.screen_manager)
+        
+        screenn = Screen(name="main")
+        screenn.add_widget(self.box_layout)
+        self.main_screen.add_widget(screenn)
 
-        self.nav_layout.add_widget(self.box_layout)
+        self.nav_layout.add_widget(self.main_screen)
 
         return self.nav_layout
 
