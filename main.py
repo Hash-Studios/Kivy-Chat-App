@@ -21,7 +21,7 @@ from kivymd.font_definitions import theme_font_styles
 from kivymd.uix.navigationdrawer import MDNavigationDrawer, NavigationLayout
 from kivymd.uix.card import MDSeparator
 
-kivy.require("2.0.0")
+#kivy.require("2.0.0")
 
 
 class ScrollableLabel(ScrollView):
@@ -215,7 +215,7 @@ class SuperChatApp(MDApp):
         app.theme_cls.primary_palette = "DeepPurple"
         app.theme_cls.accent_palette = "DeepPurple"
         app.theme_cls.theme_style = "Light"
-        Window.size = (360, 640)
+        #Window.size = (360, 640)
         Window.borderless = False
         self.title = "Super Chat"
         Config.set('kivy', 'window_title', 'Hello')
