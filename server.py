@@ -39,6 +39,10 @@ while True:
                 continue
             sockets_list.append(client_socket)
             clients[client_socket] = user
+            name = user['data'].decode('utf-8')
+            mm_h = f"{31+len(name):<10}"
+            mm = mm_h+f"[b]{name}, welcome to Super Chat![/b]"
+            client_socket.send(user['header'] + user['data'] + bytes(mm,"utf-8"))
             print('Accepted new connection from {}:{}, username: {}'.format(
                 *client_address, user['data'].decode('utf-8')))
 

@@ -26,7 +26,7 @@ from kivymd.uix.toolbar import MDToolbar
 
 import client
 
-
+Window.softinput_mode = 'pan'
 class ScrollableLabel(ScrollView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -68,8 +68,8 @@ class ConnectPage(GridLayout):
                 prev_port = d[1]
                 prev_username = d[2]
         else:
-            prev_ip = ""
-            prev_port = ""
+            prev_ip = "192.168.1.9"
+            prev_port = "1234"
             prev_username = ""
         self.add_widget(MDLabel())
         self.add_widget(MDLabel())
@@ -164,18 +164,14 @@ class ChatPage(GridLayout):
         self.add_widget(self.history)
 
         self.new_msg = MDTextField(
-            width=Window.size[0]*0.8, size_hint_x=None, multiline=False)
-        self.send_fab = MDFloatingActionButton(
-            icon="arrow-right", pos_hint={'x': 0.68, 'y': 0})
-        self.send_fab.bind(on_release=self.send_message)
-        bottom_line = GridLayout(cols=2)
+            size_hint_x=None, multiline=False, pos_hint={'center_x':0,'center_y':1})
+        bottom_line = GridLayout(cols=1)
         bottom_line.add_widget(self.new_msg)
-        bottom_line.add_widget(self.send_fab)
         self.add_widget(bottom_line)
 
         Window.bind(on_key_down=self.on_key_down)
 
-        Clock.schedule_once(self.focus_text_input, 1)
+        Clock.schedule_once(self.focus_text_input, 3)
         client.start_listening(self.incoming_message, show_error)
         self.bind(size=self.adjust_fields)
 
@@ -203,7 +199,6 @@ class ChatPage(GridLayout):
             self.history.update_chat_history(
                 f"[color=dd2020]{chat_app.connect_page.username.text}[/color] [color=20dddd]>:[/color] {msg}")
             client.send(msg)
-        Clock.schedule_once(self.focus_text_input, 0.01)
 
     def focus_text_input(self, _):
         self.new_msg.focus = True
@@ -222,7 +217,7 @@ class SuperChatApp(MDApp):
         app.theme_cls.theme_style = "Light"
         Window.borderless = False
         self.title = "Super Chat"
-        Config.set('kivy', 'window_title', 'Hello')
+        Config.set('kivy', 'window_title', 'Super Chat')
 
         self.root_sm = ScreenManager()
         rscreen = Screen(name="Root")
@@ -254,9 +249,10 @@ class SuperChatApp(MDApp):
         self.ndbox = BoxLayout(orientation="vertical", spacing="8dp")
 
         self.avatar = Image(id="avatar", size_hint=(None, None), size=(
-            Window.size[0]*0.75, Window.size[0]*0.75), source="icon.png")
+            Window.size[0]*0.65, Window.size[0]*0.55), source="icon.png")
         self.anchor = AnchorLayout(
-            anchor_x="left", anchor_y="top", size_hint_y=None, height=self.avatar.height)
+            anchor_x="center", size_hint_y=None, height=self.avatar.height*1.3)
+        self.anchor.add_widget(MDLabel())
         self.anchor.add_widget(self.avatar)
         self.ndbox.add_widget(self.anchor)
 
@@ -269,7 +265,7 @@ class SuperChatApp(MDApp):
         self.sub_nav.add_widget(self.iconitem)
         self.fl.add_widget(self.sub_nav)
         self.settings_btn = OneLineAvatarIconListItem(
-            text="Dark Mode", on_press=self.theme_change, pos_hint={'center_x': 0.5, 'center_y': 0.86})
+            text="Dark Mode", on_press=self.theme_change,on_release=lambda x: self.nav_drawer.toggle_nav_drawer(), pos_hint={'center_x': 0.5, 'center_y': 0.86})
         self.iconitem = IconLeftWidget(
             icon="theme-light-dark", pos_hint={'center_x': 1, 'center_y': 0.55})
         self.settings_btn.add_widget(self.iconitem)
@@ -278,7 +274,7 @@ class SuperChatApp(MDApp):
         self.toolbar = MDToolbar(
             elevation=8, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
         self.toolbar.left_action_items = [
-            ["close", lambda x: self.nav_drawer.toggle_nav_drawer()]]
+            ["close", sys.exit]]
         self.ndbox.add_widget(self.toolbar)
         self.nav_drawer.add_widget(self.ndbox)
         self.nav_layout.add_widget(self.nl_sm)
@@ -300,12 +296,22 @@ class SuperChatApp(MDApp):
         screen = Screen(name="Chat")
         screen.add_widget(self.chat_page)
         self.screen_manager.add_widget(screen)
+    
+    def on_start(self):
+        from kivy.base import EventLoop
+        EventLoop.window.bind(on_keyboard=self.hook_keyboard)
+    
+    def hook_keyboard(self, window, key, *largs):
+        if key == 27:
+            if chat_app.screen_manager.current!="Connect":
+                chat_app.screen_manager.current = "Connect"
+            return True
 
 
 def show_error(message):
     chat_app.info_page.update_info(message)
     chat_app.screen_manager.current = "Info"
-    Clock.schedule_once(sys.exit, 10)
+    Clock.schedule_once(sys.exit, 3)
 
 
 if __name__ == "__main__":
