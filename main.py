@@ -1,24 +1,30 @@
-import kivy
 import os
 import sys
-import client
+
+import kivy
 from kivy.app import App
-from kivy.core.window import Window
-from kivy.config import Config
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.clock import Clock
-from kivymd.textfields import MDTextField
-from kivymd.theming import ThemeManager
-from kivymd.toolbar import MDToolbar
-from kivymd.label import MDLabel
-from kivymd.button import MDFloatingActionButton
+from kivy.config import Config
+from kivy.core.window import Window
+from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.image import Image
+from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.uix.scrollview import ScrollView
+from kivymd.app import MDApp
 from kivymd.font_definitions import theme_font_styles
-from kivymd.navigationdrawer import MDNavigationDrawer, NavigationLayout, NavigationDrawerToolbar, NavigationDrawerIconButton, NavigationDrawerSubheader
-from kivymd.cards import MDSeparator
+from kivymd.theming import ThemeManager
+from kivymd.uix.button import MDFlatButton, MDFloatingActionButton
+from kivymd.uix.card import MDSeparator
+from kivymd.uix.label import MDLabel
+from kivymd.uix.list import MDList, OneLineAvatarIconListItem, IconLeftWidget
+from kivymd.uix.navigationdrawer import MDNavigationDrawer, NavigationLayout
+from kivymd.uix.textfield import MDTextField
+from kivymd.uix.toolbar import MDToolbar
+
+import client
 
 kivy.require("2.0.0")
 
@@ -67,7 +73,8 @@ class ConnectPage(GridLayout):
             prev_ip = ""
             prev_port = ""
             prev_username = ""
-
+        self.add_widget(MDLabel())
+        self.add_widget(MDLabel())
         self.add_widget(MDLabel(text="IP : ", halign="center",
                                 theme_text_color="Primary"))
         self.float = FloatLayout()
@@ -150,9 +157,10 @@ class ChatPage(GridLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.cols = 1
-        self.rows = 2
+        self.rows = 3
         self.padding = 5
 
+        self.add_widget(MDLabel())
         self.history = ScrollableLabel(
             height=Window.size[1]*0.788, size_hint_y=None)
         self.add_widget(self.history)
@@ -207,59 +215,78 @@ class ChatPage(GridLayout):
             f"[color=20dd20]{username}[/color] [color=20dddd]>:[/color] {message}")
 
 
-class SuperChatApp(App):
+class SuperChatApp(MDApp):
     def build(self):
-        app = App.get_running_app()
+        app = MDApp.get_running_app()
         app.theme_cls = ThemeManager()
         app.theme_cls.primary_palette = "DeepPurple"
         app.theme_cls.accent_palette = "DeepPurple"
         app.theme_cls.theme_style = "Light"
-        Window.size = (360, 640)
         Window.borderless = False
         self.title = "Super Chat"
         Config.set('kivy', 'window_title', 'Hello')
 
+        self.root_sm = ScreenManager()
+        rscreen = Screen(name="Root")
+
         self.nav_layout = NavigationLayout()
-        self.nav_drawer = MDNavigationDrawer(
-            drawer_logo=r"C:\Users\Asus\Desktop\Kivy-Chat-App\icon.png", spacing=8)
-
-        self.toolbar = NavigationDrawerToolbar(
-            elevation=8, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
-        self.toolbar.left_action_items = [
-            ["close", lambda x: chat_app.root.toggle_nav_drawer()]]
-        self.nav_drawer.add_widget(self.toolbar)
-        self.sub_nav = NavigationDrawerSubheader(text="Settings")
-        self.nav_drawer.add_widget(self.sub_nav)
-        self.settings_btn = NavigationDrawerIconButton(
-            text="Dark Mode", on_press=self.theme_change)
-        self.nav_drawer.add_widget(self.settings_btn)
-        self.nav_layout.add_widget(self.nav_drawer)
-
-        self.box_layout = BoxLayout(orientation="vertical")
-
-        self.toolbar = MDToolbar(
+        self.nl_sm = ScreenManager()
+        nl_screen = Screen(name="nl")
+        self.toolbar = MDToolbar(pos_hint= {'top':1},
             elevation=9, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
         self.toolbar.left_action_items = [
-            ["menu", lambda x: chat_app.root.toggle_nav_drawer()]]
-        self.box_layout.add_widget(self.toolbar)
-
+            ["menu", lambda x: self.nav_drawer.toggle_nav_drawer()]]
+        nl_screen.add_widget(self.toolbar)
         self.screen_manager = ScreenManager()
-
+        
         self.connect_page = ConnectPage()
         screen = Screen(name="Connect")
         screen.add_widget(self.connect_page)
         self.screen_manager.add_widget(screen)
 
+
         self.info_page = InfoPage()
         screen = Screen(name="Info")
         screen.add_widget(self.info_page)
         self.screen_manager.add_widget(screen)
+        nl_screen.add_widget(self.screen_manager)
+        self.nl_sm.add_widget(nl_screen)
 
-        self.box_layout.add_widget(self.screen_manager)
+        self.nav_drawer = MDNavigationDrawer(elevation=0)
 
-        self.nav_layout.add_widget(self.box_layout)
+        self.ndbox = BoxLayout(orientation="vertical",spacing="8dp")
+               
+        
+        self.avatar = Image(id= "avatar",size_hint=(None, None),size= (Window.size[0]*0.75, Window.size[0]*0.75),source= "icon.png")
+        self.anchor = AnchorLayout(anchor_x="left",anchor_y="top",size_hint_y=None,height= self.avatar.height)
+        self.anchor.add_widget(self.avatar)
+        self.ndbox.add_widget(self.anchor)
 
-        return self.nav_layout
+        self.fl = FloatLayout()
+        self.fl.padding=8
+        self.sub_nav = OneLineAvatarIconListItem(text="Settings",theme_text_color="Primary",pos_hint={'center_x':0.5,'center_y':1},font_style="Button")
+        self.iconitem = IconLeftWidget(icon="settings",pos_hint={'center_x':1,'center_y':0.55})
+        self.sub_nav.add_widget(self.iconitem)
+        self.fl.add_widget(self.sub_nav)
+        self.settings_btn = OneLineAvatarIconListItem(
+            text="Dark Mode", on_press=self.theme_change,pos_hint={'center_x':0.5,'center_y':0.86})
+        self.iconitem = IconLeftWidget(icon="theme-light-dark",pos_hint={'center_x':1,'center_y':0.55})
+        self.settings_btn.add_widget(self.iconitem)
+        self.fl.add_widget(self.settings_btn)
+        self.ndbox.add_widget(self.fl)
+        self.toolbar = MDToolbar(
+            elevation=8, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
+        self.toolbar.left_action_items = [
+            ["close", lambda x: self.nav_drawer.toggle_nav_drawer()]]
+        self.ndbox.add_widget(self.toolbar)
+        self.nav_drawer.add_widget(self.ndbox)
+        self.nav_layout.add_widget(self.nl_sm)
+        self.nav_layout.add_widget(self.nav_drawer)
+
+        rscreen.add_widget(self.nav_layout)
+        self.root_sm.add_widget(rscreen)
+
+        return self.root_sm
 
     def theme_change(self, instance):
         if chat_app.theme_cls.theme_style == "Dark":
