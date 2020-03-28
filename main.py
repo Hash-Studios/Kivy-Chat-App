@@ -26,8 +26,6 @@ from kivymd.uix.toolbar import MDToolbar
 
 import client
 
-kivy.require("2.0.0")
-
 
 class ScrollableLabel(ScrollView):
     def __init__(self, **kwargs):
@@ -232,18 +230,17 @@ class SuperChatApp(MDApp):
         self.nav_layout = NavigationLayout()
         self.nl_sm = ScreenManager()
         nl_screen = Screen(name="nl")
-        self.toolbar = MDToolbar(pos_hint= {'top':1},
-            elevation=9, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
+        self.toolbar = MDToolbar(pos_hint={'top': 1},
+                                 elevation=9, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
         self.toolbar.left_action_items = [
             ["menu", lambda x: self.nav_drawer.toggle_nav_drawer()]]
         nl_screen.add_widget(self.toolbar)
         self.screen_manager = ScreenManager()
-        
+
         self.connect_page = ConnectPage()
         screen = Screen(name="Connect")
         screen.add_widget(self.connect_page)
         self.screen_manager.add_widget(screen)
-
 
         self.info_page = InfoPage()
         screen = Screen(name="Info")
@@ -254,23 +251,27 @@ class SuperChatApp(MDApp):
 
         self.nav_drawer = MDNavigationDrawer(elevation=0)
 
-        self.ndbox = BoxLayout(orientation="vertical",spacing="8dp")
-               
-        
-        self.avatar = Image(id= "avatar",size_hint=(None, None),size= (Window.size[0]*0.75, Window.size[0]*0.75),source= "icon.png")
-        self.anchor = AnchorLayout(anchor_x="left",anchor_y="top",size_hint_y=None,height= self.avatar.height)
+        self.ndbox = BoxLayout(orientation="vertical", spacing="8dp")
+
+        self.avatar = Image(id="avatar", size_hint=(None, None), size=(
+            Window.size[0]*0.75, Window.size[0]*0.75), source="icon.png")
+        self.anchor = AnchorLayout(
+            anchor_x="left", anchor_y="top", size_hint_y=None, height=self.avatar.height)
         self.anchor.add_widget(self.avatar)
         self.ndbox.add_widget(self.anchor)
 
         self.fl = FloatLayout()
-        self.fl.padding=8
-        self.sub_nav = OneLineAvatarIconListItem(text="Settings",theme_text_color="Primary",pos_hint={'center_x':0.5,'center_y':1},font_style="Button")
-        self.iconitem = IconLeftWidget(icon="settings",pos_hint={'center_x':1,'center_y':0.55})
+        self.fl.padding = 8
+        self.sub_nav = OneLineAvatarIconListItem(text="Settings", theme_text_color="Primary", pos_hint={
+                                                 'center_x': 0.5, 'center_y': 1}, font_style="Button")
+        self.iconitem = IconLeftWidget(icon="settings", pos_hint={
+                                       'center_x': 1, 'center_y': 0.55})
         self.sub_nav.add_widget(self.iconitem)
         self.fl.add_widget(self.sub_nav)
         self.settings_btn = OneLineAvatarIconListItem(
-            text="Dark Mode", on_press=self.theme_change,pos_hint={'center_x':0.5,'center_y':0.86})
-        self.iconitem = IconLeftWidget(icon="theme-light-dark",pos_hint={'center_x':1,'center_y':0.55})
+            text="Dark Mode", on_press=self.theme_change, pos_hint={'center_x': 0.5, 'center_y': 0.86})
+        self.iconitem = IconLeftWidget(
+            icon="theme-light-dark", pos_hint={'center_x': 1, 'center_y': 0.55})
         self.settings_btn.add_widget(self.iconitem)
         self.fl.add_widget(self.settings_btn)
         self.ndbox.add_widget(self.fl)
