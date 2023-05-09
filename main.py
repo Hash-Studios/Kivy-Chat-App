@@ -1,8 +1,6 @@
 import os
 import sys
 
-import kivy
-from kivy.app import App
 from kivy.clock import Clock
 from kivy.config import Config
 from kivy.core.window import Window
@@ -16,17 +14,18 @@ from kivy.uix.scrollview import ScrollView
 from kivymd.app import MDApp
 from kivymd.font_definitions import theme_font_styles
 from kivymd.theming import ThemeManager
-from kivymd.uix.button import MDFlatButton, MDFloatingActionButton
-from kivymd.uix.card import MDSeparator
+from kivymd.uix.button import MDFloatingActionButton
 from kivymd.uix.label import MDLabel
-from kivymd.uix.list import MDList, OneLineAvatarIconListItem, IconLeftWidget
-from kivymd.uix.navigationdrawer import MDNavigationDrawer, NavigationLayout
+from kivymd.uix.list import OneLineAvatarIconListItem, IconLeftWidget
+from kivymd.uix.navigationdrawer import MDNavigationDrawer, MDNavigationLayout
 from kivymd.uix.textfield import MDTextField
-from kivymd.uix.toolbar import MDToolbar
+from kivymd.uix.toolbar import MDTopAppBar
 
 import client
 
 Window.softinput_mode = 'pan'
+
+
 class ScrollableLabel(ScrollView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -45,7 +44,7 @@ class ScrollableLabel(ScrollView):
 
         self.layout.height = self.chat_history.texture_size[1] + 15
         self.chat_history.height = self.chat_history.texture_size[1]
-        self.chat_history.text_size = (self.chat_history.width*0.98, None)
+        self.chat_history.text_size = (self.chat_history.width * 0.98, None)
 
         self.scroll_to(self.scroll_to_point)
 
@@ -148,7 +147,7 @@ class InfoPage(GridLayout):
         self.message.text = message
 
     def update_text_width(self, *_):
-        self.message.text_size = (self.message.width*0.9, None)
+        self.message.text_size = (self.message.width * 0.9, None)
 
 
 class ChatPage(GridLayout):
@@ -160,11 +159,11 @@ class ChatPage(GridLayout):
 
         self.add_widget(MDLabel())
         self.history = ScrollableLabel(
-            height=Window.size[1]*0.788, size_hint_y=None)
+            height=Window.size[1] * 0.788, size_hint_y=None)
         self.add_widget(self.history)
 
         self.new_msg = MDTextField(
-            size_hint_x=None, multiline=False, pos_hint={'center_x':0,'center_y':1})
+            size_hint_x=None, multiline=False, pos_hint={'center_x': 0, 'center_y': 1})
         bottom_line = GridLayout(cols=1)
         bottom_line.add_widget(self.new_msg)
         self.add_widget(bottom_line)
@@ -222,13 +221,13 @@ class SuperChatApp(MDApp):
         self.root_sm = ScreenManager()
         rscreen = Screen(name="Root")
 
-        self.nav_layout = NavigationLayout()
+        self.nav_layout = MDNavigationLayout()
         self.nl_sm = ScreenManager()
         nl_screen = Screen(name="nl")
-        self.toolbar = MDToolbar(pos_hint={'top': 1},
+        self.toolbar = MDTopAppBar(pos_hint={'top': 1},
                                  elevation=9, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
         self.toolbar.left_action_items = [
-            ["menu", lambda x: self.nav_drawer.toggle_nav_drawer()]]
+            ["menu", lambda x: self.nav_drawer.set_state('toggle')]]
         nl_screen.add_widget(self.toolbar)
         self.screen_manager = ScreenManager()
 
@@ -248,10 +247,9 @@ class SuperChatApp(MDApp):
 
         self.ndbox = BoxLayout(orientation="vertical", spacing="8dp")
 
-        self.avatar = Image(id="avatar", size_hint=(None, None), size=(
-            Window.size[0]*0.65, Window.size[0]*0.55), source="icon.png")
+        self.avatar = Image(source="icon.png")
         self.anchor = AnchorLayout(
-            anchor_x="center", size_hint_y=None, height=self.avatar.height*1.3)
+            anchor_x="center", size_hint_y=None, height=self.avatar.height * 1.3)
         self.anchor.add_widget(MDLabel())
         self.anchor.add_widget(self.avatar)
         self.ndbox.add_widget(self.anchor)
@@ -259,19 +257,20 @@ class SuperChatApp(MDApp):
         self.fl = FloatLayout()
         self.fl.padding = 8
         self.sub_nav = OneLineAvatarIconListItem(text="Settings", theme_text_color="Primary", pos_hint={
-                                                 'center_x': 0.5, 'center_y': 1}, font_style="Button")
+            'center_x': 0.5, 'center_y': 1}, font_style="Button")
         self.iconitem = IconLeftWidget(icon="settings", pos_hint={
-                                       'center_x': 1, 'center_y': 0.55})
+            'center_x': 1, 'center_y': 0.55})
         self.sub_nav.add_widget(self.iconitem)
         self.fl.add_widget(self.sub_nav)
         self.settings_btn = OneLineAvatarIconListItem(
-            text="Dark Mode", on_press=self.theme_change,on_release=lambda x: self.nav_drawer.toggle_nav_drawer(), pos_hint={'center_x': 0.5, 'center_y': 0.86})
+            text="Dark Mode", on_press=self.theme_change, on_release=lambda x: self.nav_drawer.set_state('toggle'),
+            pos_hint={'center_x': 0.5, 'center_y': 0.86})
         self.iconitem = IconLeftWidget(
             icon="theme-light-dark", pos_hint={'center_x': 1, 'center_y': 0.55})
         self.settings_btn.add_widget(self.iconitem)
         self.fl.add_widget(self.settings_btn)
         self.ndbox.add_widget(self.fl)
-        self.toolbar = MDToolbar(
+        self.toolbar = MDTopAppBar(
             elevation=8, title=chat_app.title, md_bg_color=chat_app.theme_cls.primary_color)
         self.toolbar.left_action_items = [
             ["close", sys.exit]]
@@ -296,14 +295,14 @@ class SuperChatApp(MDApp):
         screen = Screen(name="Chat")
         screen.add_widget(self.chat_page)
         self.screen_manager.add_widget(screen)
-    
+
     def on_start(self):
         from kivy.base import EventLoop
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
     
     def hook_keyboard(self, window, key, *largs):
         if key == 27:
-            if chat_app.screen_manager.current!="Connect":
+            if chat_app.screen_manager.current != "Connect":
                 chat_app.screen_manager.current = "Connect"
             return True
 
